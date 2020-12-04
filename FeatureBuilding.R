@@ -1,7 +1,6 @@
 library(data.table)
 library(dplyr)
-ratings <- fread('../Data/metadata_csv/participant_ratings.csv')
-ratings[,"id"] <- apply(ratings, 1, function (x) {paste0(x[1],"-",x[2])})
+ratings <- fread("./Data/metadata_csv/participant_ratings.csv")
 data_y <- ratings[,c("Participant_id","Trial", "Valence", 
                      "Arousal", "Dominance", "Liking")]
 
@@ -23,3 +22,4 @@ colnames(labels)[1:2] <- c("SubNo","TrialNo")
 
 finalLabs <- labels[rep(seq_len(nrow(ratings)), each=60),]
 
+saveRDS(object = finalLabs,file = "./Data/finalLabs.rds")
