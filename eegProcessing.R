@@ -63,7 +63,16 @@ dimnames(sumPSD)[[1]] <- paste0("subject", "_", sprintf("%03d", 1:32))
 dimnames(sumPSD)[[2]] <- c("delta","theta","alpha","beta","gamma")
 saveRDS(sumPSD, "freqFeatures.rds")
 
-##
+##Reshape freqFeatures into long format
+x_freq <- data.table()
+for (i in 1:32) {
+    x_freq <- cbind(x_freq,freq[i,,])
+    print("done")
+}
+x_freq <- t(x_freq)
+x_freq <- as.data.table(x_freq)
+colnames(x_freq) <- c("delta","theta","alpha","beta","gamma")
+
 
 
 
