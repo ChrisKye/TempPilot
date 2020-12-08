@@ -26,6 +26,7 @@ processedRaw <- pblapply(fileList, function(x) {
 names(processedRaw) <- paste0("subject", "_", sprintf("%03d", 1:32))
 saveRDS(processedRaw, "epochedList.rds")
 
+################### FEATURE TYPE NO 1 (AVERAGED) ################### 
 ## FFT extract features from each participant
 library(reticulate)
 library(pbapply)
@@ -72,7 +73,46 @@ for (i in 1:32) {
 x_freq <- t(x_freq)
 x_freq <- as.data.table(x_freq)
 colnames(x_freq) <- c("delta","theta","alpha","beta","gamma")
+saveRDS(x_freq, "./Data/x_freq.rds")
+
+################### FEATURE TYPE NO 2 (PER CHANNEL) ################### 
+library(reticulate)
+library(pbapply)
+library(abind)
+py_config()
+sig <- import("scipy.signal")
+int <- import("scipy.integrate")
+
+delta <- c(1:4)
+theta <- c(4:8)
+alpha <- c(8:13)
+beta <- c(13:30)
+gamma <- c(30:47)
+
+channelPSD <- array(dim = c(32, 5, 76800)) ##32 channels x 5 freqs x 2400*32 examples
+colnames(channelPSD) <- c("delta","theta","alpha","beta","gamma")
+for (i in 1:32) { ##subjects
+    sub <- as.array(processedRaw[[i]])
+    rawPSD <- array(dim = c(32, 5, 2400)) ##32 channels per subject
+    for (j in 1:32) { ##channels
+        rawPSD[j,,] <- pbapply(sub[j,,], 2, function(x) {
+            psd <- sig$welch(x, fs = 128, nperseg = 128, noverlap = 32)
+            psd <- as.data.frame(psd)
+            d <- int$simps(psd[psd[,1] %in% delta,2], dx = 0.25)
+            t <- int$simps(psd[psd[,1] %in% theta,2], dx = 0.25)
+            a <- int$simps(psd[psd[,1] %in% alpha,2], dx = 0.25)
+            b <- int$simps(psd[psd[,1] %in% beta,2], dx = 0.25)
+            g <- int$simps(psd[psd[,1] %in% gamma,2], dx = 0.25)
+            return(c(d,t,a,b,g))
+        })
+    }
+    channelPSD <- abind(channelPSD, rawPSD, along=3)
+    print(paste0("Subject iteration: ", i))
+}
 
 
+
+
+## FEATURE TYPE NO 1: AVERAGED
 
 

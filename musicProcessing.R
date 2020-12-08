@@ -11,14 +11,14 @@ data_y <- ratings[,c("Participant_id","Trial", "Valence",
 
 ##Relabelling to High/Low for emotion dimensions
 labels <- apply(data_y, 1, function(x) {
-  if (x[3] > 5) val = 1
-  else val = 0
-  if (x[4] > 5) arou = 1
-  else arou = 0
-  if (x[5] > 5) dom = 1
-  else dom = 0
-  if (x[6] > 5) lik = 1
-  else lik = 0
+  if (x[3] > 5) val = "High"
+  else val = "Low"
+  if (x[4] > 5) arou = "High"
+  else arou = "Low"
+  if (x[5] > 5) dom = "High"
+  else dom = "Low"
+  if (x[6] > 5) lik = "High"
+  else lik = "Low"
   return (c("Sub" = x[1], "Trial" = x[2], "Valence" = val,"Arousal" = arou,
                    "Dominance" = dom, "Liking" = lik))
 })
@@ -38,22 +38,11 @@ df <- readMat('music_anal/musicFeatures.mat')
 df <- df[[1]]
 df <- as.data.frame(df)
 df <- as.data.frame(t(df))
-names <- colnames(df)
-df1 <- as.matrix(df)
-df1 <- matrix(unlist(df1), nrow = 40, ncol=13)
-df1 <- as.data.frame(df1)
-colnames(df1) <- names
+row.names(df) <- c(1:40)
+df <- as.data.table(df)
+df <- df[,-c("pitch")]
 
 ##Repeat to concatenate
-x_music <- df1[rep(seq_len(nrow(df1)), each=60),]
-x_music <- x_music[rep(seq_len(nrow(x_music)), 32), ]
-saveRDS(x_music, "./Data/x_music.rds")
-
-##Full Feature Set
-featureFull <- cbind(x_freq, x_music)
-saveRDS(object = featureFull, file = "./Data/featureFull.rds")
-
-
 
 
 
